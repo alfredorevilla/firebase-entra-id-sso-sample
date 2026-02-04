@@ -22,3 +22,8 @@ export interface AuthContext {
   userProfile: UserProfile | null
   error: string | null
 }
+
+export interface PendingCredential {
+  provider: string
+  email: string
+}

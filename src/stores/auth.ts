@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import type { User as FirebaseUser } from 'firebase/auth'
 import { auth } from '@/firebase'
 import { onAuthStateChanged } from 'firebase/auth'
 import { AuthState, type UserProfile } from '@/types/auth'
+import { userService } from '@/services/userService'
 
 export const useAuthStore = defineStore('auth', () => {
   const state = ref<AuthState>(AuthState.LOADING)
@@ -16,6 +17,14 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = firebaseUser
       state.value = firebaseUser ? AuthState.AUTHED : AuthState.UNAUTHED
       error.value = null
+
+      // Load user profile when user changes
+      if (firebaseUser) {
+        loadUserProfile(firebaseUser.uid, firebaseUser.email, firebaseUser.displayName)
+      } else {
+        userProfile.value = null
+      }
+
       resolve()
     }, (err) => {
       error.value = err.message
@@ -23,6 +32,16 @@ export const useAuthStore = defineStore('auth', () => {
       resolve()
     })
   })
+
+  const loadUserProfile = async (uid: string, email: string | null, displayName: string | null) => {
+    try {
+      const provider = 'password' // Will be updated based on actual provider
+      const profile = await userService.getOrCreateUserDoc(uid, email, displayName, provider)
+      userProfile.value = profile
+    } catch (err) {
+      console.error('Failed to load user profile:', err)
+    }
+  }
 
   const waitForAuth = () => authPromise
 
@@ -50,5 +69,6 @@ export const useAuthStore = defineStore('auth', () => {
     setUserProfile,
     setError,
     reset,
+    loadUserProfile,
   }
 })

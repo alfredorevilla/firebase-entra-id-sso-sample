@@ -19,6 +19,11 @@ const router = createRouter({
       meta: { requiresAuth: false }
     },
     {
+      path: '/link-account',
+      component: () => import('@/views/LinkAccountView.vue'),
+      meta: { requiresAuth: false }
+    },
+    {
       path: '/home',
       component: () => import('@/views/HomeView.vue'),
       meta: { requiresAuth: true }
